@@ -12,7 +12,7 @@ Public Class Basic_Location_Finder
         Me.comps = New BLs_Binary_Comparers
         Me.wStrand = wsStrand
         Me.wIntron = wIntron
-        All_UnSorted_BLs = Locations
+        All_UnSorted_BLs = Locations.ToList
 
     End Sub
     Public Shared Function Get_Same_Introns(Loci As Basic_Location, Locis As IEnumerable(Of Basic_Location),
