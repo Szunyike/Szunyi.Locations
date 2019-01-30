@@ -6,13 +6,28 @@ Public Class Basic_Location_Finder
 
     Public Property wStrand As Boolean
     Public Property wIntron As Boolean
-    Public Property comps As BLs_Binary_Comparers
+    Public Property comps As New BLs_Binary_Comparers
 
     Public Sub New(Locations As IEnumerable(Of Basic_Location), wsStrand As Boolean, wIntron As Boolean)
         Me.comps = New BLs_Binary_Comparers
         Me.wStrand = wsStrand
         Me.wIntron = wIntron
         All_UnSorted_BLs = Locations.ToList
+
+        Dim TSS = From x In All_UnSorted_BLs Order By x.Location.TSS
+        Me.By_Enum.Add(Locations_By.TSS, TSS.ToList)
+
+        Dim PAS = From x In All_UnSorted_BLs Order By x.Location.PAS
+        Me.By_Enum.Add(Locations_By.PAS, PAS.ToList)
+
+        Dim LS = From x In All_UnSorted_BLs Order By x.Location.LocationStart
+        Me.By_Enum.Add(Locations_By.LS, LS.ToList)
+
+        Dim LE = From x In All_UnSorted_BLs Order By x.Location.LocationEnd
+        Me.By_Enum.Add(Locations_By.LE, LE.ToList)
+
+
+
 
     End Sub
     Public Shared Function Get_Same_Introns(Loci As Basic_Location, Locis As IEnumerable(Of Basic_Location),
@@ -62,7 +77,20 @@ Public Class Basic_Location_Finder
         Return Me.By_Enum(type)(Index)
     End Function
     Private Function Get_Index(loci As Basic_Location, type As Locations_By, comp As Object) As Integer
-        Return Me.By_Enum(type).BinarySearch(loci, Get_Comparer(type))
+        Select Case type
+            Case Locations_By.LE
+                Me.By_Enum(Locations_By.LE).BinarySearch(loci, Get_Comparer(type))
+            Case Locations_By.LS
+                Me.By_Enum(Locations_By.LS).BinarySearch(loci, Get_Comparer(type))
+            Case Locations_By.TSS
+                Me.By_Enum(Locations_By.TSS).BinarySearch(loci, Get_Comparer(type))
+            Case Locations_By.PAS
+                Me.By_Enum(Locations_By.PAS).BinarySearch(loci, Get_Comparer(type))
+            Case Else
+                Dim kj As Int16 = 54
+
+        End Select
+
     End Function
     Private Function Get_First_Index(Index As Integer, Type As Locations_By, loci As Basic_Location) As Integer
         Dim First_Index As Integer = Index

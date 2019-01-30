@@ -54,7 +54,9 @@ Public Class Convert
     End Function
 
     Public Shared Iterator Function From_Template_Switch(tS As List(Of TemplateSwitch)) As IEnumerable(Of Basic_Location)
-        Throw New NotImplementedException()
+        For Each t In tS
+            Yield New Basic_Location(t.Loci)
+        Next
     End Function
 End Class
 
@@ -260,15 +262,11 @@ Public Class BLs_Binary_Comparers
         Public Sub New(sorted As List(Of List(Of Basic_Location)), pos As Locations_By)
             GroupSortedByCount = (From x In sorted Select x Order By x.Count Descending).ToList
             Select Case pos
-                Case Locations_By.TSS & Locations_By.PAS
-                    GroupSortedByStart = (From x In sorted Select x Order By x.First.Location.LocationStart)
-
+                Case Locations_By.TSS Or Locations_By.PAS
+                    GroupSortedByStart = (From x In sorted Select x Order By x.First.Location.TSS)
                     OneLociPerGroupByStart = (From x In GroupSortedByStart Select x.First).ToList
-
                     GroupSortedByEnd = (From x In sorted Select x Order By x.First.Location.LocationEnd)
                     OneLociPerGroupEnd = (From x In GroupSortedByEnd Select x.First).ToList
-
-
                 Case Locations_By.LE
                     GroupSortedByEnd = sorted
                     OneLociPerGroupEnd = (From x In GroupSortedByEnd Select x.First).ToList
@@ -289,9 +287,14 @@ Public Class BLs_Binary_Comparers
                     GroupSortedByTSS.Sort(LociBinary.Gr_ByTSS)
                     OneLociPerGroupTSS = (From x In GroupSortedByTSS Select x.First).ToList
                     OneLociPerGroupTSS.Sort(LociBinary.TSS_wStrand)
-                    Dim t = From x In OneLociPerGroupTSS Where x.Location.IsComplementer = True
 
-                    Dim jk As Int16 = 6
+                Case Else
+                    GroupSortedByStart = (From x In sorted Select x Order By x.First.Location.LocationStart).ToList
+                    OneLociPerGroupByStart = (From x In GroupSortedByStart Select x.First).ToList
+                    GroupSortedByEnd = (From x In sorted Select x Order By x.First.Location.LocationEnd).ToList
+                    OneLociPerGroupEnd = (From x In GroupSortedByEnd Select x.First).ToList
+
+
             End Select
         End Sub
     End Class
@@ -324,7 +327,7 @@ Public Class BLs_Binary_Comparers
                     Case Else
                         '  Case Locations_By.TSS_PAS
                         Dim BinarySameStarts = Get_Locis_Near._Start(Loci, Width, M.GroupSortedByStart, M.OneLociPerGroupByStart)
-                        SameStarts = Get_Locis_Near._End(Loci, Width, BinarySameStarts)
+                        SameStarts = Get_Locis_Near._Start_End(Loci, Width, BinarySameStarts)
                 End Select
 
                 Dim cLocis As New List(Of Basic_Location)
@@ -348,16 +351,21 @@ Public Class BLs_Binary_Comparers
     End Function
     Public Shared Function GroupBy(Locis As List(Of Basic_Location), pos As Locations_By, MinNof As Integer) As List(Of List(Of Basic_Location))
         Select Case pos
+
             Case Locations_By.TSS
                 Return GroupBy_Start_End_Boths.Group_By_Locis_Start(Locis, MinNof).ToList
             Case Locations_By.LE
                 Return GroupBy_Start_End_Boths.Group_By_Locis_End(Locis, MinNof).ToList
-            Case Locations_By.TSS & Locations_By.PAS
+            Case Locations_By.TSS Or Locations_By.PAS
                 Return GroupBy_Start_End_Boths.Group_By_Locis_Start_End(Locis, MinNof).ToList
             Case Locations_By.TSS
                 Return GroupBy_Start_End_Boths.Group_By_Locis_TSS(Locis, MinNof).ToList
             Case Locations_By.PAS
                 Return GroupBy_Start_End_Boths.Group_By_Locis_PAS(Locis, MinNof).ToList
+            Case Locations_By.TSS Or Locations_By.PAS
+                Dim kj As Int16 = 65
+            Case Locations_By.LE Or Locations_By.LS
+                Return GroupBy_Start_End_Boths.Group_By_Locis_TSS(Locis, MinNof).ToList
         End Select
         Return Nothing
     End Function
@@ -369,7 +377,11 @@ Public Class Get_Locis_Near
     Public Shared Property LociBinary As New BLs_Binary_Comparers
 #Region "Basic_Location"
     Public Shared Function _Start_End(Loci As List(Of Basic_Location), width As Integer, sorted As List(Of List(Of Basic_Location))) As List(Of List(Of Basic_Location))
-        Dim NearStarts = From x In sorted Where x.First.Location.Operator = Loci.First.Location.Operator And x.First.Location.LocationStart > Loci.First.Location.LocationStart - width And x.First.Location.LocationStart < Loci.First.Location.LocationStart + width And x.First.Location.LocationEnd > Loci.First.Location.LocationEnd - width And x.First.Location.LocationEnd < Loci.First.Location.LocationEnd + width
+        Dim NearStarts = From x In sorted Where x.First.Location.Operator = Loci.First.Location.Operator And x.First.Location.LocationStart >= Loci.First.Location.LocationStart - width And
+                                              x.First.Location.LocationStart <= Loci.First.Location.LocationStart + width _
+                                              And x.First.Location.LocationEnd >= Loci.First.Location.LocationEnd - width And
+                                              x.First.Location.LocationEnd <= Loci.First.Location.LocationEnd + width
+
 
         Dim Out As New List(Of List(Of Basic_Location))
 
