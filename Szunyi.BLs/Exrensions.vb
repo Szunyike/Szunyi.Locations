@@ -2,7 +2,7 @@
 
 Imports System.Runtime.CompilerServices
 Imports System.Windows.Forms
-
+Imports Szunyi.Common
 Module Location_Extension
     <Extension()>
     Public Function TSS(Location As Bio.IO.GenBank.Location) As Integer
@@ -419,7 +419,7 @@ Public Class OverLapping_Locations
 
         For Each node As System.Windows.Forms.TreeNode In nodes.Nodes
             If node.Text = "" Then
-                ls.Add(Szunyi.Common.Text.General.GetText(t, vbTab))
+                ls.Add(t.gettext)
 
             Else
                 t.Add(node.Text)

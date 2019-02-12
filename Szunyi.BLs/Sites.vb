@@ -1,7 +1,7 @@
 ﻿Imports System.IO
 Imports Bio
 Imports Bio.IO.GenBank
-
+Imports Szunyi.Common
 Public Class Sites
     Public Property posStrand As List(Of ILocation)()
     Public Property negStrand As List(Of ILocation)()
@@ -269,7 +269,7 @@ Public Class Sites
             Dim str As New System.Text.StringBuilder
 
             Dim p = Get_Distribution(Feat.Location, Me.sort)
-            out.Add(Szunyi.Common.Text.General.GetText(p, vbTab))
+            out.Add(p.GetText)
         Next
         Return out
     End Function
@@ -289,7 +289,7 @@ Public Class Sites
             Dim str As New System.Text.StringBuilder
 
             Dim p = Get_Distribution(Feat.Location, Me.sort)
-            out.Add(Szunyi.Common.Text.General.GetText(p, vbTab))
+            out.Add(p.Gettext)
         Next
         Return out
     End Function
@@ -550,54 +550,7 @@ Public Class Sites
         Dim str As New System.Text.StringBuilder
 
         Dim Alpha = Get_alpha()
-        For i1 = 0 To Pos.Count - 1
-            If Pos(i1) <> 0 Then
-                If Pos(i1) > 1 Then ' One read not read
-                    If Is_Local_Maximum(i1, LocalWidth, False) = True Then
-                        Dim Hundrends = Get_Distribution(i1, False, sort)
-                        Dim avr = Hundrends.Sum / Hundrends.Count
-                        Dim poi As New Accord.Statistics.Distributions.Univariate.PoissonDistribution(avr)
-                        Dim p = 1 - poi.DistributionFunction(Pos(i1), True)
 
-                        str.AppendLine()
-                        str.Append(i1).Append(vbTab)
-                        str.Append("+").Append(vbTab)
-                        str.Append(Pos(i1)).Append(vbTab)
-                        str.Append(Hundrends.Sum).Append(vbTab)
-                        str.Append(p).Append(vbTab)
-                        If p < Alpha Then
-                            str.Append("Passed")
-                        Else
-                            str.Append("Failed")
-                        End If
-                    End If
-                End If
-            End If
-        Next
-        For i1 = 0 To Neg.Count - 1
-            If Neg(i1) <> 0 Then
-                If Neg(i1) > 1 Then ' One read not read
-                    If Is_Local_Maximum(i1, LocalWidth, True) = True Then
-                        Dim Hundrends = Get_Distribution(i1, True, sort)
-                        Dim avr = Hundrends.Sum / Hundrends.Count
-                        Dim poi As New Accord.Statistics.Distributions.Univariate.PoissonDistribution(avr)
-                        Dim p = 1 - poi.DistributionFunction(Neg(i1), True)
-                        Dim Alfa = (Alpha / (LocalMaxPos.Count + LocalMaxNeg.Count)) / Hundrends.Count
-                        str.AppendLine()
-                        str.Append(i1).Append(vbTab)
-                        str.Append("-").Append(vbTab)
-                        str.Append(Neg(i1)).Append(vbTab)
-                        str.Append(Hundrends.Sum).Append(vbTab)
-                        str.Append(p).Append(vbTab)
-                        If p < Alfa Then
-                            str.Append("Passed")
-                        Else
-                            str.Append("Failed")
-                        End If
-                    End If
-                End If
-            End If
-        Next
         Return str.ToString
 
     End Function
@@ -607,11 +560,11 @@ Public Class Sites
     Private Function Get_Poisson_Value(Width As Integer, Index As Integer, isComplementer As Boolean, Value As Integer) As Double
         Dim Hundrends = Get_Distribution(Index, isComplementer, sort)
         Dim avr = Hundrends.Sum / Hundrends.Count
-        Dim poi As New Accord.Statistics.Distributions.Univariate.PoissonDistribution(avr)
+        '    Dim poi As New Accord.Statistics.Distributions.Univariate.PoissonDistribution(avr)
         'Dim poi As New Accord.Statistics.Distributions.Univariate.GeometricDistribution(avr)
 
-        Dim p = 1 - poi.DistributionFunction(Pos(Index), True)
-        Return p
+        '     Dim p = 1 - poi.DistributionFunction(Pos(Index), True)
+        '  Return p
     End Function
     ''' <summary>
     ''' LocalWidth +- Widht +-
@@ -820,12 +773,7 @@ Public Class Poisson
         Me.IsComplementer = isComplementer
         Hundrends = site.Get_Distribution(Index, isComplementer, site.sort)
         avr = Hundrends.Sum / Hundrends.Count
-        If avr <> 0 Then
-            Dim poi As New Accord.Statistics.Distributions.Univariate.PoissonDistribution(avr)
-            p = 1 - poi.DistributionFunction(Value, True)
-        Else
-            p = -1
-        End If
+
 
     End Sub
     Public Overrides Function ToString() As String
@@ -842,7 +790,7 @@ Public Class Poisson
         str.Append(Me.p).Append(vbTab)
         str.Append(Is_Local_Maximum).Append(vbTab)
         str.Append(Passed).Append(vbTab)
-        str.Append(Common.Text.General.GetText(Me.Distribution, vbTab))
+        str.Append(Me.Distribution.GetText)
         Return str.ToString
     End Function
 End Class
